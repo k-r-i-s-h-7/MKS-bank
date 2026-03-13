@@ -1,0 +1,42 @@
+# Compiled class files
+*.class
+
+# Logs
+*.log
+
+# Spring Boot build output
+target/
+
+# Maven wrapper jar
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE files
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Local configuration overrides
+application-local.properties
+application-dev.properties
+
+# Node (if frontend exists)
+node_modules/
+
+# Docker volumes
+docker-data/
+
+# Test reports
+surefire-reports/
+
+# Temporary files
+*.tmp
+*.swp
