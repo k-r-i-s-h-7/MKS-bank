@@ -1,28 +1,21 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
-import CustomerList from "./components/CustomerList";
-import AccountList from "./components/AccountList";
-import TransferForm from "./components/TransferForm";
+import Register from "./components/Register";
+import Dashboard from "./components/Dashboard";
+import Accounts from "./components/Account";
+import Transfer from "./components/Transfer";
 
 function App() {
-  const handleLogin = () => {
-    console.log("Logged in");
-  };
-
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
-        <Route path="/dashboard" element={
-          <div>
-            <CustomerList />
-            <AccountList customerId={1} />
-            <TransferForm />
-          </div>
-        } />
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/accounts" element={<Accounts />} />
+        <Route path="/transfer" element={<Transfer />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 

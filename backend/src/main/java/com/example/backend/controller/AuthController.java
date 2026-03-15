@@ -1,10 +1,9 @@
 package com.example.backend.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.example.backend.dto.LoginRequest;
+import com.example.backend.dto.RegisterRequest;
 import com.example.backend.model.Customer;
 import com.example.backend.model.User;
 import com.example.backend.repository.CustomerRepository;
@@ -12,6 +11,7 @@ import com.example.backend.services.UserService;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     private final UserService userService;
@@ -22,28 +22,30 @@ public class AuthController {
         this.customerRepository = customerRepository;
     }
 
-    // Register new user
     @PostMapping("/register")
-    public User register(@RequestParam String username,
-                         @RequestParam String password,
-                         @RequestParam String role,
-                         @RequestParam(required = false) Long customerId) {
+    public User register(@RequestBody RegisterRequest request) {
 
         Customer customer = null;
 
-        if (customerId != null) {
-            customer = customerRepository.findById(customerId)
+        if (request.getCustomerId() != null) {
+            customer = customerRepository.findById(request.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("Customer not found"));
         }
 
-        return userService.register(username, password, role, customer);
+        return userService.register(
+                request.getUsername(),
+                request.getPassword(),
+                request.getRole(),
+                customer
+        );
     }
 
-    // Login endpoint
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password) {
+    public String login(@RequestBody LoginRequest request) {
 
-        return userService.login(username, password);
+        return userService.login(
+                request.getUsername(),
+                request.getPassword()
+        );
     }
 }
