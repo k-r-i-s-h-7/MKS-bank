@@ -22,6 +22,10 @@ public class UserService {
     }
 
     public User register(String username, String password, String role, Customer customer){
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username already exists");
+        }
+
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));

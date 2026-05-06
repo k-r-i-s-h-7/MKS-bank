@@ -1,32 +1,23 @@
-import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../auth/AuthContext";
 import api from "../api/api";
 import AuthShell from "./AuthShell";
+
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Login failed. Check credentials or register first.";
+};
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [loginSucceeded, setLoginSucceeded] = useState(false);
 
   const auth = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loginSucceeded || !auth.token) return;
-
-    navigate("/dashboard", { replace: true });
-
-    const fallbackTimer = window.setTimeout(() => {
-      if (window.location.pathname !== "/dashboard") {
-        window.location.assign("/dashboard");
-      }
-    }, 400);
-
-    return () => window.clearTimeout(fallbackTimer);
-  }, [loginSucceeded, auth.token, navigate]);
 
   const login = async () => {
     try {
@@ -41,14 +32,11 @@ export default function Login() {
         return;
       }
 
+      localStorage.setItem("token", token);
       auth.login(token);
-      setLoginSucceeded(true);
+      window.location.replace("/dashboard");
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Login failed. Check credentials or register first."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setSubmitting(false);
     }

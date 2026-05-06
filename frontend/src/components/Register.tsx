@@ -3,10 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 import AuthShell from "./AuthShell";
 
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Registration failed. Check the values and try again.";
+};
+
 export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [customerId, setCustomerId] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,22 +24,16 @@ export default function Register() {
       setError("");
       setSuccess("");
 
-      const parsedCustomerId = customerId.trim() ? Number(customerId) : undefined;
       await api.post("/auth/register", {
         username,
         password,
         role: "CUSTOMER",
-        customerId: parsedCustomerId,
       });
 
       setSuccess("Profile created. You can sign in now.");
       setTimeout(() => navigate("/"), 900);
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Registration failed. Check the values and try again."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setSubmitting(false);
     }
@@ -61,7 +61,7 @@ export default function Register() {
             Create profile
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Customer ID is optional unless you need to link to an existing customer record.
+            Creating a profile now also creates your customer record and a default savings account automatically.
           </p>
         </div>
 
@@ -96,19 +96,6 @@ export default function Register() {
               type="password"
               className="text-input"
               onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="field-label" htmlFor="customer-id">
-              Customer ID
-            </label>
-            <input
-              id="customer-id"
-              value={customerId}
-              placeholder="Optional existing customer reference"
-              className="text-input"
-              onChange={(e) => setCustomerId(e.target.value)}
             />
           </div>
 
