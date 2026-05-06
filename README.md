@@ -452,4 +452,9 @@ Week 8:    Prometheus + Grafana + Loki → add full observability
 
 ---
 
-*Generated as part of MKS-Bank DevOps Engineering Project — `k-r-i-s-h-7/MKS-bank`*
+Grafana on 3030
+Prometheus on 9091
+Backend on 8080
+Frontend on 5173
+Postgres on 5480
+Redis on 6379
