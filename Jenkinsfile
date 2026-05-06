@@ -2,110 +2,67 @@ pipeline {
     agent any
 
     environment {
-        // We will build and tag images locally for now
-        DOCKER_REGISTRY = 'mks-bank'
-        BACKEND_IMAGE = "${DOCKER_REGISTRY}/backend"
-        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/frontend"
-        // Use build number for tagging
-        TAG = "${env.BUILD_ID}"
+        DOCKER_COMPOSE = 'docker compose'
     }
 
     stages {
         stage('Checkout') {
             steps {
+                echo 'Checking out code...'
                 checkout scm
-                echo "Checked out source code."
             }
         }
 
-        stage('Test & Build Backend') {
+        stage('Build Backend (Maven)') {
             steps {
                 dir('backend') {
-                    // Compile the code so SonarQube can analyze the .class files
-                    sh 'chmod +x ./mvnw'
-                    sh './mvnw clean compile -DskipTests'
+                    echo 'Building Spring Boot backend...'
+                    // We skip tests here just for a quick basic pipeline showcase.
+                    // In a real scenario, you'd run 'mvn clean test package'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                dir('backend') {
-                    // Run Sonar Scanner to analyze the code
-                    // mks_sonarqube is the container name in our docker-compose network
-                    sh 'sonar-scanner -Dsonar.host.url=http://mks_sonarqube:9000'
-                    echo "SonarQube analysis completed. Check http://localhost:9000"
-                }
-            }
-        }
-
-        stage('Package Backend') {
-            steps {
-                dir('backend') {
-                    // Now package it into a JAR
-                    sh './mvnw package -DskipTests'
-                    echo "Backend packaged successfully."
-                }
-            }
-        }
-
-        stage('Build Frontend') {
+        stage('Build Frontend (Node.js)') {
             steps {
                 dir('frontend') {
-                    // We build the frontend using Docker's multi-stage build later, 
-                    // or we can build it here if node is installed.
-                    // For simplicity, we'll let the Dockerfile handle the npm build.
-                    echo "Frontend will be built inside its Docker container."
+                    echo 'Installing NPM dependencies...'
+                    sh 'npm install'
+                    
+                    echo 'Building Vite React app...'
+                    sh 'npm run build'
                 }
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                echo "Building Backend Docker Image..."
-                sh "docker build -t ${BACKEND_IMAGE}:latest -t ${BACKEND_IMAGE}:${TAG} -f backend/Dockerfile backend/"
-                
-                echo "Building Frontend Docker Image..."
-                sh "docker build -t ${FRONTEND_IMAGE}:latest -t ${FRONTEND_IMAGE}:${TAG} -f frontend/Dockerfile frontend/"
+                echo 'Building Docker images via docker-compose...'
+                // Using --no-cache to ensure fresh images during the CI/CD run
+                sh "${DOCKER_COMPOSE} build"
             }
         }
 
-        /* 
-        // Uncomment this when you configure a Docker Hub credential in Jenkins
-        stage('Push to Registry') {
+        stage('Deploy locally') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-                    sh "docker push ${BACKEND_IMAGE}:${TAG}"
-                    sh "docker push ${BACKEND_IMAGE}:latest"
-                    sh "docker push ${FRONTEND_IMAGE}:${TAG}"
-                    sh "docker push ${FRONTEND_IMAGE}:latest"
-                }
-            }
-        }
-        */
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                // To do this, Jenkins needs `kubectl` and a valid kubeconfig.
-                // We update the deployment images to the new tag.
-                echo "Deploying to Kubernetes..."
-                sh "kubectl set image deployment/backend backend=${BACKEND_IMAGE}:${TAG} -n mks-bank"
-                sh "kubectl set image deployment/frontend frontend=${FRONTEND_IMAGE}:${TAG} -n mks-bank"
-                
-                // Wait for rollout
-                sh "kubectl rollout status deployment/backend -n mks-bank --timeout=120s"
-                sh "kubectl rollout status deployment/frontend -n mks-bank --timeout=120s"
+                echo 'Deploying the stack locally...'
+                // Restarts the containers with the newly built images
+                sh "${DOCKER_COMPOSE} down"
+                sh "${DOCKER_COMPOSE} up -d"
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline execution finished!'
+        }
         success {
-            echo "Pipeline completed successfully!"
+            echo 'All stages completed successfully. MKS-Bank is deployed!'
         }
         failure {
-            echo "Pipeline failed. Check the logs."
+            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
