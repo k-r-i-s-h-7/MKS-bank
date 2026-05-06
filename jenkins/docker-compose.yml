@@ -1,0 +1,34 @@
+
+services:
+  jenkins:
+    build: .
+    container_name: mks_jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8081:8080" # Maps Jenkins to localhost:8081 (since 8080 might be used)
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # Mount Docker socket so Jenkins can build images
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount local kubeconfig so Jenkins can run kubectl commands
+      - ~/.kube/config:/root/.kube/config:ro
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: mks_sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_FORCEAUTHENTICATION=false
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+volumes:
+  jenkins_home:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

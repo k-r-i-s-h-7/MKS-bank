@@ -4,6 +4,8 @@ import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
 import Accounts from "./components/Account";
 import Transfer from "./components/Transfer";
+import Deposit from "./components/Deposit";
+import Withdraw from "./components/Withdraw";
 
 function App() {
   return (
@@ -14,6 +16,9 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/transfer" element={<Transfer />} />
+
+        <Route path="/deposit" element={<Deposit />} />
+        <Route path="/withdraw" element={<Withdraw />} />
       </Routes>
     </BrowserRouter>
   );

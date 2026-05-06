@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: mks-bank
+  labels:
+    app: postgres
+spec:
+  serviceName: "postgres-service"
+  replicas: 1   # Never run multiple DB replicas without replication setup
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          # Load database credentials from Kubernetes Secret
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: mks-bank-secrets
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mks-bank-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mks-bank-secrets
+                  key: POSTGRES_PASSWORD
+            # Set timezone to UTC
+            - name: TZ
+              value: "UTC"
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data  # Where Postgres stores its data files
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-d", "bankdb"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc   # Bind to the PVC we created

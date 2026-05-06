@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mks-bank-config
+  namespace: mks-bank
+data:
+  # Database connection - points to the postgres Service (DNS name inside the cluster)
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/bankdb?options=-c%20TimeZone=UTC"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  SPRING_JPA_SHOW_SQL: "true"
+  SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: "UTC"
+  # Redis connection - points to the redis Service
+  SPRING_DATA_REDIS_HOST: "redis-service"
+  SPRING_DATA_REDIS_PORT: "6379"

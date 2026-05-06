@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: mks-bank
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432        # Port inside the cluster (what the backend connects to)
+      targetPort: 5432  # Port on the pod
+  # ClusterIP = only accessible INSIDE the cluster.
+  # The backend uses "postgres-service:5432" to connect.
+  # No external access needed for a database.
+  type: ClusterIP

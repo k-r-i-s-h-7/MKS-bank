@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mks-bank
+  labels:
+    app: mks-bank
+    environment: local

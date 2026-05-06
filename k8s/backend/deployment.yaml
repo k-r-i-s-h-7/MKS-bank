@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mks-bank
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # Docker Desktop shares the local Docker daemon, so locally built images work directly.
+          # Build first with: docker build -t mks-bank/backend:latest ./backend
+          image: mks-bank/backend:latest
+          imagePullPolicy: Never   # Use local image, do NOT pull from registry
+          ports:
+            - containerPort: 9090
+          # Inject non-sensitive config from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: mks-bank-config
+          # Inject sensitive credentials from Secret
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mks-bank-secrets
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mks-bank-secrets
+                  key: SPRING_DATASOURCE_PASSWORD
+          # Health checks — Spring Actuator exposes /actuator/health
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9090
+            initialDelaySeconds: 45  # Spring Boot takes ~30s to start
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9090
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          # Resource limits — tune based on your machine's capacity
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

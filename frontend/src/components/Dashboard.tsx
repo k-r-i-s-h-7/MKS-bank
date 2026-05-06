@@ -35,6 +35,28 @@ export default function Dashboard() {
             Send funds between accounts
           </p>
         </Link>
+        <Link
+          to="/deposit"
+          className="bg-black border border-gold p-6 rounded-xl hover:bg-gray-900 transition"
+        >
+          <h2 className="text-xl text-gold font-semibold">
+            Deposit Amount
+          </h2>
+          <p className="text-gray-400 mt-2">
+            Transfer money into your account
+          </p>
+        </Link>
+        <Link
+          to="/withdraw"
+          className="bg-black border border-gold p-6 rounded-xl hover:bg-gray-900 transition"
+        >
+          <h2 className="text-xl text-gold font-semibold">
+            Withdraw Amount
+          </h2>
+          <p className="text-gray-400 mt-2">
+            Withdraw money from your account
+          </p>
+        </Link>
 
       </div>
 
