@@ -2,8 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #0f0f0f;
-  color: white;
-  font-family: system-ui, sans-serif;
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    min-height: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    margin: 0;
+    background:
+      radial-gradient(circle at top left, rgba(45, 212, 191, 0.2), transparent 32%),
+      radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.22), transparent 24%),
+      linear-gradient(180deg, #f7f5ef 0%, #eef4f4 48%, #f5efe7 100%);
+    color: #0f172a;
+    font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply rounded-[30px] border border-white/60 bg-white/70 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl;
+  }
+
+  .soft-panel {
+    @apply rounded-[26px] border border-white/80 bg-white/80 shadow-[0_16px_50px_rgba(15,23,42,0.06)];
+  }
+
+  .field-label {
+    @apply mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500;
+  }
+
+  .text-input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white/95 px-4 py-3.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:ring-4 focus:ring-teal-100;
+  }
+
+  .primary-button {
+    @apply inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .secondary-button {
+    @apply inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white/90 px-4 py-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100;
+  }
+
+  .font-display {
+    font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  }
 }

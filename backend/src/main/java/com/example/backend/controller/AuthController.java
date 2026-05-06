@@ -11,7 +11,6 @@ import com.example.backend.services.UserService;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:30000"})
 public class AuthController {
 
     private final UserService userService;

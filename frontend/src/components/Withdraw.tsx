@@ -1,51 +1,90 @@
-import { useState } from "react"
-import api from "../api/api"
+import { useState } from "react";
+import api from "../api/api";
+import AppShell from "./AppShell";
 
-export default function Withdraw(){
-
-  const [accountId,setAccountId] = useState("")
-  const [amount,setAmount] = useState("")
+export default function Withdraw() {
+  const [accountId, setAccountId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const withdraw = async () => {
+    try {
+      setSubmitting(true);
+      setStatus("");
+      setError("");
 
-    await api.post(
-      `/payments/withdraw?accountId=${accountId}&amount=${amount}`
-    )
-
-    alert("Withdrawal Successful")
-  }
+      await api.post(`/payments/withdraw?accountId=${accountId}&amount=${amount}`);
+      setStatus("Withdrawal completed successfully.");
+    } catch (e: any) {
+      setError(
+        e?.response?.data?.message ||
+          e?.response?.data ||
+          "Withdrawal failed."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-
-    <div className="p-10 max-w-xl">
-
-      <h1 className="text-3xl text-gold font-bold mb-8">
-        Withdraw Funds
-      </h1>
-
-      <div className="bg-black border border-gold p-8 rounded-xl">
-
-        <input
-          placeholder="Account ID"
-          className="w-full mb-4 p-3 bg-dark border border-gray-700 rounded"
-          onChange={(e)=>setAccountId(e.target.value)}
-        />
-
-        <input
-          placeholder="Amount"
-          className="w-full mb-6 p-3 bg-dark border border-gray-700 rounded"
-          onChange={(e)=>setAmount(e.target.value)}
-        />
-
-        <button
-          onClick={withdraw}
-          className="w-full bg-gold text-black py-3 rounded font-bold"
+    <AppShell
+      eyebrow="Payments"
+      title="Withdraw Funds"
+      description="Submit outbound fund movement against an account with consistent status handling."
+    >
+      <section className="soft-panel mx-auto max-w-2xl p-5 sm:p-6">
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void withdraw();
+          }}
         >
-          Withdraw
-        </button>
+          <div>
+            <label className="field-label" htmlFor="withdraw-account-id">
+              Account ID
+            </label>
+            <input
+              id="withdraw-account-id"
+              placeholder="Enter account ID"
+              className="text-input"
+              onChange={(e) => setAccountId(e.target.value)}
+              value={accountId}
+            />
+          </div>
 
-      </div>
+          <div>
+            <label className="field-label" htmlFor="withdraw-amount">
+              Amount
+            </label>
+            <input
+              id="withdraw-amount"
+              placeholder="Enter withdrawal amount"
+              className="text-input"
+              onChange={(e) => setAmount(e.target.value)}
+              value={amount}
+            />
+          </div>
 
-    </div>
-  )
+          {status && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+              {status}
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
+
+          <button type="submit" className="primary-button" disabled={submitting}>
+            {submitting ? "Submitting..." : "Withdraw Funds"}
+          </button>
+        </form>
+      </section>
+    </AppShell>
+  );
 }
