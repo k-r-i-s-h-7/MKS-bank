@@ -66,9 +66,10 @@ public class AccountService {
 
     // Convert entity to DTO
     public AccountDTO convertToDTO(Account account) {
+        Long customerId = account.getCustomer() != null ? account.getCustomer().getId() : null;
         return new AccountDTO(
                 account.getId(),
-                account.getCustomer().getId(),
+            customerId,
                 account.getType(),
                 account.getBalance(),
                 account.getStatus());

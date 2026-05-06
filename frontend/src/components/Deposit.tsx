@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import api from "../api/api";
 import AppShell from "./AppShell";
+import { AuthContext } from "../auth/AuthContext";
+
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Deposit failed.";
+};
 
 export default function Deposit() {
-  const [accountId, setAccountId] = useState("");
+  const auth = useContext(AuthContext);
+  const [accountId, setAccountId] = useState(auth.accountId ? String(auth.accountId) : "");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -18,11 +27,7 @@ export default function Deposit() {
       await api.post(`/payments/deposit?accountId=${accountId}&amount=${amount}`);
       setStatus("Deposit completed successfully.");
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Deposit failed."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setSubmitting(false);
     }

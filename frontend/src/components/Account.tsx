@@ -8,6 +8,13 @@ interface Account {
   type: string;
 }
 
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Unable to load accounts for this customer.";
+};
+
 export default function Accounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [customerId, setCustomerId] = useState("");
@@ -22,11 +29,7 @@ export default function Accounts() {
       setAccounts(res.data);
     } catch (e: any) {
       setAccounts([]);
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Unable to load accounts for this customer."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setLoading(false);
     }

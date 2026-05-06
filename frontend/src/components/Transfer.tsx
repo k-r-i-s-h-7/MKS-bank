@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import api from "../api/api";
 import AppShell from "./AppShell";
+import { AuthContext } from "../auth/AuthContext";
+
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Transfer failed.";
+};
 
 export default function Transfer() {
-  const [from, setFrom] = useState("");
+  const auth = useContext(AuthContext);
+  const [from, setFrom] = useState(auth.accountId ? String(auth.accountId) : "");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
@@ -20,11 +29,7 @@ export default function Transfer() {
       );
       setStatus("Transfer completed successfully.");
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Transfer failed."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setSubmitting(false);
     }

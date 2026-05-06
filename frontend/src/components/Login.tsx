@@ -34,6 +34,20 @@ export default function Login() {
 
       localStorage.setItem("token", token);
       auth.login(token);
+
+      try {
+        const meRes = await api.get("/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const customerId = meRes.data?.customerId;
+        const accountId = meRes.data?.accountId;
+        if (customerId && accountId) {
+          auth.setProfile(customerId, accountId);
+        }
+      } catch (meError) {
+        // Ignore if this fails, dashboard will retry
+      }
+
       window.location.replace("/dashboard");
     } catch (e: any) {
       setError(getErrorMessage(e));

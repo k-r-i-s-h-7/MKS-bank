@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import api from "../api/api";
 import AppShell from "./AppShell";
+import { AuthContext } from "../auth/AuthContext";
+
+const getErrorMessage = (e: any): string => {
+  const data = e?.response?.data;
+  if (typeof data === "string") return data;
+  if (typeof data?.message === "string") return data.message;
+  return "Withdrawal failed.";
+};
 
 export default function Withdraw() {
-  const [accountId, setAccountId] = useState("");
+  const auth = useContext(AuthContext);
+  const [accountId, setAccountId] = useState(auth.accountId ? String(auth.accountId) : "");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -18,11 +27,7 @@ export default function Withdraw() {
       await api.post(`/payments/withdraw?accountId=${accountId}&amount=${amount}`);
       setStatus("Withdrawal completed successfully.");
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message ||
-          e?.response?.data ||
-          "Withdrawal failed."
-      );
+      setError(getErrorMessage(e));
     } finally {
       setSubmitting(false);
     }

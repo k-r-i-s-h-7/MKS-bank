@@ -1,5 +1,8 @@
+import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import api from "../api/api";
 import AppShell from "./AppShell";
+import { AuthContext } from "../auth/AuthContext";
 
 const quickActions = [
   {
@@ -25,6 +28,53 @@ const quickActions = [
 ];
 
 export default function Dashboard() {
+  const auth = useContext(AuthContext);
+  const [customerId, setCustomerId] = useState<number | null>(auth.customerId);
+  const [accountId, setAccountId] = useState<number | null>(auth.accountId);
+  const [accountType, setAccountType] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string>("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadProfile = async () => {
+      try {
+        setProfileError("");
+        const res = await api.get("/auth/me");
+
+        if (!active) return;
+
+        const fetchedCustomerId = res.data?.customerId ?? null;
+        const fetchedAccountId = res.data?.accountId ?? null;
+
+        setCustomerId(fetchedCustomerId);
+        setAccountId(fetchedAccountId);
+        setAccountType(res.data?.accountType ?? null);
+
+        if (fetchedCustomerId && fetchedAccountId) {
+          auth.setProfile(fetchedCustomerId, fetchedAccountId);
+        }
+      } catch (e: any) {
+        if (!active) return;
+
+        const data = e?.response?.data;
+        if (typeof data === "string") {
+          setProfileError(data);
+        } else if (typeof data?.message === "string") {
+          setProfileError(data.message);
+        } else {
+          setProfileError("Unable to load profile identifiers.");
+        }
+      }
+    };
+
+    void loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <AppShell
       eyebrow="Workspace"
@@ -72,6 +122,68 @@ export default function Dashboard() {
         </section>
 
         <aside className="space-y-6">
+          <section className="soft-panel p-5 sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-700">
+              Logged-in profile
+            </p>
+            <h2 className="mt-2 font-display text-2xl text-slate-950">
+              Identifier snapshot
+            </h2>
+            <div className="mt-4 space-y-3 text-sm text-slate-700">
+              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Customer ID
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-slate-950">
+                    {customerId ?? "-"}
+                  </span>
+                  {customerId && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(String(customerId))}
+                      className="text-xs text-teal-600 hover:text-teal-800 bg-teal-50 px-2 py-1 rounded"
+                    >
+                      Copy
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  Account ID
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-slate-950">
+                    {accountId ?? "-"}
+                  </span>
+                  {accountId && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(String(accountId))}
+                      className="text-xs text-teal-600 hover:text-teal-800 bg-teal-50 px-2 py-1 rounded"
+                    >
+                      Copy
+                    </button>
+                  )}
+                </div>
+              </div>
+              {accountType && (
+                <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                  <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Account Type
+                  </span>
+                  <span className="font-semibold text-slate-950">
+                    {accountType}
+                  </span>
+                </div>
+              )}
+            </div>
+            {profileError && (
+              <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {profileError}
+              </div>
+            )}
+          </section>
+
           <section className="soft-panel p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-700">
               Platform

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import api from "../api/api";
 import AuthShell from "./AuthShell";
 
@@ -15,23 +15,33 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [createdCustomerId, setCreatedCustomerId] = useState<number | null>(null);
+  const [createdAccountId, setCreatedAccountId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const navigate = useNavigate();
 
   const register = async () => {
     try {
       setSubmitting(true);
       setError("");
       setSuccess("");
+      setCreatedCustomerId(null);
+      setCreatedAccountId(null);
 
-      await api.post("/auth/register", {
+      const res = await api.post("/auth/register", {
         username,
         password,
         role: "CUSTOMER",
       });
 
-      setSuccess("Profile created. You can sign in now.");
-      setTimeout(() => navigate("/"), 900);
+      const customerId = res?.data?.customerId ?? null;
+      const accountId = res?.data?.accountId ?? null;
+
+      if (customerId) localStorage.setItem("customerId", String(customerId));
+      if (accountId) localStorage.setItem("accountId", String(accountId));
+
+      setSuccess("Profile created successfully.");
+      setCreatedCustomerId(customerId);
+      setCreatedAccountId(accountId);
     } catch (e: any) {
       setError(getErrorMessage(e));
     } finally {
@@ -106,8 +116,21 @@ export default function Register() {
           )}
 
           {success && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              {success}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+              <p className="font-medium text-lg mb-3">{success}</p>
+              <div className="space-y-2 bg-white/60 p-4 rounded-xl">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm uppercase tracking-wider font-semibold text-emerald-700">Customer ID</span>
+                  <span className="font-mono bg-emerald-100 px-2 py-1 rounded text-emerald-900 font-bold">{createdCustomerId ?? "-"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm uppercase tracking-wider font-semibold text-emerald-700">Account ID</span>
+                  <span className="font-mono bg-emerald-100 px-2 py-1 rounded text-emerald-900 font-bold">{createdAccountId ?? "-"}</span>
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-emerald-700">
+                Please make note of these IDs. You can now return to the sign-in screen.
+              </p>
             </div>
           )}
 
