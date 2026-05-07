@@ -29,7 +29,7 @@ docker build -t mks-bank/backend:latest -f ./backend/Dockerfile ./backend
 if ($LASTEXITCODE -ne 0) { Write-Host "  ❌ Backend build failed!" -ForegroundColor Red; exit 1 }
 
 Write-Host "  Building frontend image..." -ForegroundColor Gray
-docker build -t mks-bank/frontend:latest -f ./frontend/Dockerfile ./frontend
+docker build --build-arg VITE_API_BASE_URL=http://localhost:30080 -t mks-bank/frontend:latest -f ./frontend/Dockerfile ./frontend
 if ($LASTEXITCODE -ne 0) { Write-Host "  ❌ Frontend build failed!" -ForegroundColor Red; exit 1 }
 Write-Host "  ✅ Images built successfully." -ForegroundColor Green
 Write-Host ""

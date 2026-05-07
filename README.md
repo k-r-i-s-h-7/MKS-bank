@@ -458,3 +458,4 @@ Backend on 8080
 Frontend on 5173
 Postgres on 5480
 Redis on 6379
+Jenkins on 8081
